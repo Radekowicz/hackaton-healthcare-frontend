@@ -1,8 +1,9 @@
 import React,{ useState } from 'react'
 import MapGL, {GeolocateControl } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import * as config from "./config";
 
-const TOKEN="XXX"
+const TOKEN=config.TOKEN;
 
 const geolocateStyle = {
     float: 'left',
