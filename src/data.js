@@ -39,5 +39,15 @@ export const data =
                 "type": "Point",
                 "coordinates": [51.146346064950166, 16.92455733108644]
             }
+        },
+        {
+            "ID": 5,
+            "name": "Całodobowe Ambulatorium Chirurgii Ogólnej CZAS",
+            "phone": "71 3482815",
+            "address": "ul. Dobrzyńska 21/23",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [51.10729552221796, 17.04628147873924]
+            }
         }
     ]
