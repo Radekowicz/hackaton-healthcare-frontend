@@ -1,12 +1,26 @@
 import 'mapbox-gl/dist/mapbox-gl.css';
 import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import React, { useRef, useState } from 'react';
-import MapGL from 'react-map-gl';
+import ReactMapGL, {Marker, Popup} from 'react-map-gl';
 import DeckGL, { GeoJsonLayer } from 'deck.gl';
 import Geocoder from 'react-map-gl-geocoder';
 import * as config from './config';
+import {data} from "./data";
+import {makeStyles} from "@material-ui/core";
 
 const token = config.TOKEN;
+
+const useStyles = makeStyles(() => ({
+    markerButton: {
+        background: "none",
+        border: "none",
+        cursor: "pointer"
+    },
+    svgButton: {
+        width: '20px',
+        height: '20px',
+    }
+}));
 
 const SearchableMap = () => {
   const [viewport, setViewPort] = useState({
@@ -15,8 +29,9 @@ const SearchableMap = () => {
     zoom: 6.3,
     transitionDuration: 100,
   });
+  const [selectedSOR, setSelectedSOR] = useState(null);
   const [searchResultLayer, setSearchResult] = useState(null);
-
+    const classes = useStyles();
   const mapRef = useRef();
 
   const handleOnResult = (event) => {
@@ -48,9 +63,9 @@ const SearchableMap = () => {
       <h1
         style={{ textAlign: 'center', fontSize: '25px', fontWeight: 'bolder' }}
       >
-        Use the search bar to find a location on the map
+        Skorzystaj z wyszukiwarki w celu znalezienia swojego miasta
       </h1>
-      <MapGL
+      <ReactMapGL
         ref={mapRef}
         {...viewport}
         mapStyle="mapbox://styles/mapbox/streets-v9"
@@ -59,6 +74,29 @@ const SearchableMap = () => {
         onViewportChange={setViewPort}
         mapboxApiAccessToken={token}
       >
+          {
+              data.map(sor => (
+                  <Marker key={sor.ID} longitude={sor.geometry.coordinates[1]}
+                          latitude={sor.geometry.coordinates[0]}>
+                      <button className={classes.markerButton} onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedSOR(sor);
+                      }}>
+                          <img className={classes.svgButton} src="/medicine.svg" alt="SOR"/>
+                      </button>
+                  </Marker>
+              ))
+          }
+          {selectedSOR ? (
+            <Popup latitude={selectedSOR.geometry.coordinates[0]} longitude={selectedSOR.geometry.coordinates[1]}>
+                <div>
+                    <h5>{selectedSOR.name}</h5>
+                    <h6>Numer telefonu:  {selectedSOR.phone}</h6>
+                    <h6>Aktaulna liczba pacjentów czekających na SOR:  </h6>
+                    <h6>Przewidywany czas ocziekiwania:  </h6>
+                </div>
+            </Popup>
+          ):null}
         <Geocoder
           mapRef={mapRef}
           onResult={handleOnResult}
@@ -68,8 +106,7 @@ const SearchableMap = () => {
           placeholder="Szukaj"
           countries="PL"
         />
-      </MapGL>
-      <DeckGL {...viewport} layers={[searchResultLayer]} />
+      </ReactMapGL>
     </div>
   );
 };
