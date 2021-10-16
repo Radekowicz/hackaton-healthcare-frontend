@@ -35,7 +35,6 @@ const SearchableMap = () => {
     const mapRef = useRef();
 
     const handleOnResult = (event) => {
-        console.log(event.result);
         setSearchResult(
             new GeoJsonLayer({
                 id: 'search-result',
@@ -59,11 +58,14 @@ const SearchableMap = () => {
     };
 
     async function readInfoFromSOR(sor) {
-        const responseSOR = await fetch("https://api.example.com/items")
-        return responseSOR;
+        //const responseSOR = await fetch("http://localhost:3000/api/v1/data")
+        return await fetch(`http://localhost:3000/api/v1/data/${sor.ID}`, {
+            method: 'GET',
+            mode: 'cors',
+        });
     }
 
-    const closePopUp = () =>{
+    const closePopUp = () => {
         setSelectedSOR(null);
     }
 
@@ -87,15 +89,16 @@ const SearchableMap = () => {
                     data.map(sor => (
                         <Marker key={sor.ID} longitude={sor.coordinates[1]}
                                 latitude={sor.coordinates[0]}>
-                            <button className={classes.markerButton} onClick={(e) => {
+                            <button className={classes.markerButton} onClick={async (e) => {
                                 e.preventDefault();
-                                /*       readInfoFromSOR(sor).then(response => {
-                                           //sor.patients =
-                                           //sor.estimatedTime =
-
-                                       })*/
-                                setSelectedSOR(sor);
-
+                                await readInfoFromSOR(sor).then(response => {
+                                    response.json().then(p => {
+                                        const length = p.data.data.length;
+                                        sor.patients = p.data.data[length - 1].queueLength;
+                                        sor.estimatedTime = p.data.data[length - 1].expectedWaitTime;
+                                        setSelectedSOR(sor);
+                                    })
+                                })
                             }}>
                                 <img className={classes.svgButton} src="/medicine.svg" alt="SOR"/>
                             </button>
@@ -110,8 +113,8 @@ const SearchableMap = () => {
                         <div>
                             <h5>{selectedSOR.name}</h5>
                             <h6>Numer telefonu: {selectedSOR.phone}</h6>
-                            <h6>Aktaulna liczba pacjentów czekających na SOR: </h6>
-                            <h6>Przewidywany czas ocziekiwania: </h6>
+                            <h6>Aktaulna liczba pacjentów czekających na SOR: {selectedSOR.patients} </h6>
+                            <h6>Przewidywany czas ocziekiwania: {selectedSOR.estimatedTime}</h6>
                             <h6>Historia liczby pacjentów w punkcie SOR: </h6>
                             <ul>
                                 <li><h6>0,5h temu: </h6></li>
