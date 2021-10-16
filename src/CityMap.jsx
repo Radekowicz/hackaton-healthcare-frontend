@@ -17,8 +17,8 @@ const useStyles = makeStyles(() => ({
         cursor: "pointer"
     },
     svgButton: {
-        width: '20px',
-        height: '20px',
+        width: '30px',
+        height: '30px',
     }
 }));
 
@@ -58,23 +58,13 @@ const SearchableMap = () => {
         });
     };
 
-    const readInfoFromSOR = () => {
-        fetch("https://api.example.com/items")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        isLoaded: true,
-                        items: result.items
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        isLoaded: true,
-                        error
-                    });
-                }
-            )
+    async function readInfoFromSOR(sor) {
+        const responseSOR = await fetch("https://api.example.com/items")
+        return responseSOR;
+    }
+
+    const closePopUp = () =>{
+        setSelectedSOR(null);
     }
 
     return (
@@ -87,7 +77,7 @@ const SearchableMap = () => {
             <ReactMapGL
                 ref={mapRef}
                 {...viewport}
-                mapStyle="mapbox://styles/mapbox/streets-v9"
+                mapStyle="mapbox://styles/mapbox/light-v10"
                 width="100%"
                 height="90%"
                 onViewportChange={setViewPort}
@@ -95,13 +85,17 @@ const SearchableMap = () => {
             >
                 {
                     data.map(sor => (
-                        <Marker key={sor.ID} longitude={sor.geometry.coordinates[1]}
-                                latitude={sor.geometry.coordinates[0]}>
+                        <Marker key={sor.ID} longitude={sor.coordinates[1]}
+                                latitude={sor.coordinates[0]}>
                             <button className={classes.markerButton} onClick={(e) => {
                                 e.preventDefault();
-                                //sor.patients =
-                                //sor.estimatedTime =
+                                /*       readInfoFromSOR(sor).then(response => {
+                                           //sor.patients =
+                                           //sor.estimatedTime =
+
+                                       })*/
                                 setSelectedSOR(sor);
+
                             }}>
                                 <img className={classes.svgButton} src="/medicine.svg" alt="SOR"/>
                             </button>
@@ -109,13 +103,22 @@ const SearchableMap = () => {
                     ))
                 }
                 {selectedSOR ? (
-                    <Popup latitude={selectedSOR.geometry.coordinates[0]}
-                           longitude={selectedSOR.geometry.coordinates[1]}>
+                    <Popup latitude={selectedSOR.coordinates[0]}
+                           longitude={selectedSOR.coordinates[1]}
+                           closeOnClick={true}
+                           onClose={closePopUp}>
                         <div>
                             <h5>{selectedSOR.name}</h5>
                             <h6>Numer telefonu: {selectedSOR.phone}</h6>
                             <h6>Aktaulna liczba pacjentów czekających na SOR: </h6>
                             <h6>Przewidywany czas ocziekiwania: </h6>
+                            <h6>Historia liczby pacjentów w punkcie SOR: </h6>
+                            <ul>
+                                <li><h6>0,5h temu: </h6></li>
+                                <li><h6>1h temu: </h6></li>
+                                <li><h6>1,5h temu: </h6></li>
+                            </ul>
+
                         </div>
                     </Popup>
                 ) : null}
